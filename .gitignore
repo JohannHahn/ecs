@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
@@ -16,4 +15,4 @@ CMakeCache.txt
 *.cmake
 Makefile
 *.exe
->>>>>>> table test with db
+todo.txt

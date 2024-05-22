@@ -1,0 +1,3 @@
+- Build an ECS
+    - raylib
+    - find out how it works (google)
