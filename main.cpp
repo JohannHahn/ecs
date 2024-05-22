@@ -13,11 +13,11 @@ const char* window_title = "ECS";
 float speed = 50.f;
 
 enum component_name {
-    POSITION = 1, VELOCITY = 2,
+    POSITION = 1, VELOCITY = 2, CONTROLS = 4
 };
 
 enum component_index{
-    POSITION_I, VELOCITY_I,
+    POSITION_I, VELOCITY_I, CONTROLS_I
 };
 
 enum entity_kind {
@@ -27,7 +27,7 @@ enum entity_kind {
 Vector2 position[2]= {{10.f, 10.f}, {100.f, 100.f}};
 Vector2 velocity[2] = {{0.f, 0.f}, {1.f, 1.f}};
 
-ECS ecs(2, sizeof(Vector2), sizeof(Vector2));
+ECS ecs(3, sizeof(Vector2), sizeof(Vector2), sizeof(bool));
 
 void set_vec(u64 e_id, u64 c_id, Vector2 vec) {
     ecs.write_component(e_id, c_id, &vec);
@@ -37,11 +37,12 @@ Vector2 get_vec(u64 e_id, u64 c_id) {
     return *(Vector2*)ecs.read_component(e_id, c_id);
 }
 
-void add_enemy() {
+void add_enemy(bool controls) {
     ecs.add_entity(POSITION | VELOCITY);
     ecs.write_component(ecs.entity_count() - 1, POSITION_I, &position[ENEMY]);
     Vector2 vel = {.x = velocity[ENEMY].x - ecs.entity_count(), .y = velocity[ENEMY].y - ecs.entity_count()};
     ecs.write_component(ecs.entity_count() - 1, VELOCITY_I, &vel);
+    ecs.write_component(ecs.entity_count() - 1, CONTROLS_I, &controls);
 }
 
 void movement_system() {   
@@ -71,25 +72,30 @@ void control_system() {
     if (IsKeyDown(KEY_DOWN)) {
 	vel = Vector2Add(vel, {0.f, 1.f});
     }
-    set_vec(PLAYER, VELOCITY_I, vel);
+    for (int entity = 0; entity < ecs.entity_count(); ++entity) {
+	if (ecs.check_components(entity, CONTROLS | VELOCITY)) {
+	    if (get_attr(ecs, entity, CONTROLS_I, bool)) set_vec(entity, VELOCITY_I, vel);
+	}
+    }
 
-    if (IsKeyReleased(KEY_SPACE)) {
-	add_enemy();
+    if (IsKeyReleased(KEY_T)) {
+	add_enemy(true);
+    }
+    if (IsKeyReleased(KEY_F)) {
+	add_enemy(false);
     }
 }
 
-
-enum test {
-    ONE = 1, TWO = 2, THREE = 4
-};
 
 int main() {
     InitWindow(window_width, window_height, window_title);
     SetTargetFPS(60);
 
-    ecs.add_entity(POSITION | VELOCITY);
+    ecs.add_entity(POSITION | VELOCITY | CONTROLS);
     ecs.write_component(PLAYER, POSITION_I, &position[PLAYER]);
     ecs.write_component(PLAYER, VELOCITY_I, &velocity[PLAYER]);
+    bool bt = true;
+    ecs.write_component(PLAYER, CONTROLS_I, &bt);
 
     while (!WindowShouldClose()) {
 	BeginDrawing();
