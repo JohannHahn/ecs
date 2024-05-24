@@ -45,11 +45,11 @@ void ECS::free_components() {
 void ECS::add_entity(u64 mask) {
     component_masks.push_back(mask); 
     for(int i = 0; i < components.size(); ++i) {
-	void* p = components[i];
-	void* h = malloc(component_sizes[i] * component_masks.size());
-	memcpy(h, p, component_sizes[i] * component_masks.size() - 1);
-	free(p);
-	components[i] = h;
+	void* old_components = components[i];
+	void* new_components = malloc(component_sizes[i] * component_masks.size());
+	memcpy(new_components, old_components, component_sizes[i] * component_masks.size() - 1);
+	free(old_components);
+	components[i] = new_components;
     }
 }
 

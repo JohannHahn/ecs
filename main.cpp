@@ -104,7 +104,6 @@ int main() {
 	movement_system();
 	DrawRectangleV(get_vec(PLAYER, POSITION_I), {100, 100}, BLUE);
 	for (int i = 1; i < ecs.entity_count(); ++i) {
-	    assert(i != PLAYER);
 	    DrawCircleV(get_vec(i, POSITION_I), 10.f, RED);
 	}
 	EndDrawing();
