@@ -4,10 +4,6 @@
 #include <cstring>
 #include <iostream>
 
-ECS::ECS() {
-    component_masks = {};
-}
-
 ECS::ECS(u64 component_count, ...) {
     // preallocate for 1 entity with no components
     component_masks = {};
@@ -26,10 +22,9 @@ void ECS::realloc_components() {
     if (components.size() > 0) {
 	free_components();
     }
+    // add_entity will create the 
     for(int i = 0; i < component_sizes.size(); ++i) {
-	u64 size = component_sizes[i];
-	components.push_back(malloc(size * component_masks.size()));
-	std::cout << "created container with " << size * component_masks.size() << " byte chunks\n";
+	components.push_back(nullptr);
     }
 }
 
@@ -46,26 +41,24 @@ void ECS::add_entity(u64 mask) {
     for(int i = 0; i < components.size(); ++i) {
 	void* old_components = components[i];
 	void* new_components = malloc(component_sizes[i] * component_masks.size());
-	memcpy(new_components, old_components, component_sizes[i] * component_masks.size() - 1);
-	free(old_components);
+	if (old_components) {  
+	    memcpy(new_components, old_components, component_sizes[i] * component_masks.size() - 1);
+	    free(old_components);
+	}
 	components[i] = new_components;
     }
 }
 
 bool ECS::check_components(u64 entity_id, u64 component_flags) {
-    int bit = 0;
-    while(component_flags) {
-	if (bit_check(component_flags, bit)) {
-	    if (!bit_check(component_masks[entity_id], bit)) return false;
-	}
-	component_flags <<= 1;
-    } 
-    return true;
+    return component_flags & component_masks[entity_id];
 }
 
 u64 ECS::entity_count() {
     return component_masks.size();
 }
+
 u64 ECS::component_count() {
     return components.size();
 }
+
+

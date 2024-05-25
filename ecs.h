@@ -16,9 +16,9 @@ typedef uint8_t  byte;
 #define bit_set(map, bit) (map |= (u64)1 << bit)
 #define bit_reset(map, bit) (map &= ~(u64(1) << bit)) 
 
+
 class ECS {
 public:
-    ECS();
     ECS(u64 component_count, ...);
     void add_entity(u64 mask);
     template<class T> void write_component(u64 entity_id, u64 component_id, T data) {
@@ -45,7 +45,3 @@ private:
     void realloc_components();
     void free_components();
 };
-
-
-
-
