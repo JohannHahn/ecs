@@ -1,5 +1,4 @@
 #include "ecs.h"
-#include <cassert>
 #include <cstdarg>
 #include <cstdlib>
 #include <cstring>
@@ -51,26 +50,6 @@ void ECS::add_entity(u64 mask) {
 	free(old_components);
 	components[i] = new_components;
     }
-}
-
-void* ECS::read_component(u64 entity_id, u64 component_id, void* out) {
-    assert(entity_id < component_masks.size());
-    assert(component_id < components.size());
-    u64 size = component_sizes[component_id];
-    void* p = (void*)((u64)components[component_id] + size * entity_id);
-    if (out) {
-	memcpy(out, p, size);
-    }
-    return p;
-}
-
-void ECS::write_component(u64 entity_id, u64 component_id, void* data) {
-    assert(entity_id < component_masks.size());
-    assert(component_id < components.size());
-    u64 size = component_sizes[component_id];
-    byte* component_field = (byte*)components[component_id];
-    component_field += size * entity_id;
-    memcpy(component_field, data, size); 
 }
 
 bool ECS::check_components(u64 entity_id, u64 component_flags) {

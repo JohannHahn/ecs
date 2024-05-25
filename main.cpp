@@ -29,31 +29,23 @@ Vector2 velocity[2] = {{0.f, 0.f}, {1.f, 1.f}};
 
 ECS ecs(3, sizeof(Vector2), sizeof(Vector2), sizeof(bool));
 
-void set_vec(u64 e_id, u64 c_id, Vector2 vec) {
-    ecs.write_component(e_id, c_id, &vec);
-}
-
-Vector2 get_vec(u64 e_id, u64 c_id) {
-    return *(Vector2*)ecs.read_component(e_id, c_id);
-}
-
 void add_enemy(bool controls) {
     ecs.add_entity(POSITION | VELOCITY);
-    ecs.write_component(ecs.entity_count() - 1, POSITION_I, &position[ENEMY]);
+    ecs.write_component(ecs.entity_count() - 1, POSITION_I, position[ENEMY]);
     Vector2 vel = {.x = velocity[ENEMY].x - ecs.entity_count(), .y = velocity[ENEMY].y - ecs.entity_count()};
-    ecs.write_component(ecs.entity_count() - 1, VELOCITY_I, &vel);
-    ecs.write_component(ecs.entity_count() - 1, CONTROLS_I, &controls);
+    ecs.write_component(ecs.entity_count() - 1, VELOCITY_I, vel);
+    ecs.write_component(ecs.entity_count() - 1, CONTROLS_I, controls);
 }
 
 void movement_system() {   
     for(int i = 0; i < ecs.entity_count(); ++i) {
 	if (!ecs.check_components(i, POSITION | VELOCITY)) continue; 
-	Vector2 pos = get_vec(i, POSITION_I);
-	Vector2 vel = get_vec(i, VELOCITY_I);
+	Vector2 pos = ecs.read_component<Vector2>(i, POSITION_I);
+	Vector2 vel = ecs.read_component<Vector2>(i, VELOCITY_I);
 	vel.x *= speed * GetFrameTime();
 	vel.y *= speed * GetFrameTime();
 	pos = Vector2Add(pos, vel);
-	ecs.write_component(i, POSITION_I, &pos);
+	ecs.write_component(i, POSITION_I, pos);
     } 
 }
 
@@ -74,7 +66,7 @@ void control_system() {
     }
     for (int entity = 0; entity < ecs.entity_count(); ++entity) {
 	if (ecs.check_components(entity, CONTROLS | VELOCITY)) {
-	    if (get_attr(ecs, entity, CONTROLS_I, bool)) set_vec(entity, VELOCITY_I, vel);
+	    if (ecs.read_component<bool>(entity, CONTROLS_I)) ecs.write_component(entity, VELOCITY_I, vel);
 	}
     }
 
@@ -86,25 +78,25 @@ void control_system() {
     }
 }
 
-
 int main() {
     InitWindow(window_width, window_height, window_title);
     SetTargetFPS(60);
 
-    ecs.add_entity(POSITION | VELOCITY | CONTROLS);
-    ecs.write_component(PLAYER, POSITION_I, &position[PLAYER]);
-    ecs.write_component(PLAYER, VELOCITY_I, &velocity[PLAYER]);
-    bool bt = true;
-    ecs.write_component(PLAYER, CONTROLS_I, &bt);
+    ecs.add_entity(POSITION | VELOCITY);
+    ecs.write_component(PLAYER, POSITION_I, position[PLAYER]);
+    ecs.write_component(PLAYER, VELOCITY_I, velocity[PLAYER]);
+    ecs.write_component(PLAYER, CONTROLS_I, true);
+
+    ecs.add_entity(POSITION | CONTROLS);
 
     while (!WindowShouldClose()) {
 	BeginDrawing();
         ClearBackground(GRAY);     
 	control_system();
 	movement_system();
-	DrawRectangleV(get_vec(PLAYER, POSITION_I), {100, 100}, BLUE);
+	DrawRectangleV(ecs.read_component<Vector2>(PLAYER, POSITION_I), {100, 100}, BLUE);
 	for (int i = 1; i < ecs.entity_count(); ++i) {
-	    DrawCircleV(get_vec(i, POSITION_I), 10.f, RED);
+	    DrawCircleV(ecs.read_component<Vector2>(i, POSITION_I), 10.f, RED);
 	}
 	EndDrawing();
     }
