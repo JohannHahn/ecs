@@ -12,7 +12,9 @@ ECS::ECS(u64 component_count, ...) {
     va_start(args, component_count);
     // save component byte sizes
     for(int i = 0; i < component_count; ++i) {
-	component_sizes.push_back(va_arg(args, u64));
+	u64 component_size = va_arg(args, u64);
+	std::cout << "adding component_size = " << component_size << "\n";
+	component_sizes.push_back(component_size);
     }
     va_end(args);
     realloc_components();
@@ -36,7 +38,7 @@ void ECS::free_components() {
     std::cout << "components cleared" << "\n";
 }
 
-void ECS::add_entity(u64 mask) {
+u64 ECS::add_entity(u64 mask) {
     component_masks.push_back(mask); 
     for(int i = 0; i < components.size(); ++i) {
 	void* old_components = components[i];
@@ -47,6 +49,16 @@ void ECS::add_entity(u64 mask) {
 	}
 	components[i] = new_components;
     }
+    return component_masks.size() - 1;
+}
+
+
+void ECS::remove_entity(u64 entity_id) {
+    assert(entity_id < component_masks.size());
+    for (void* container: components) {
+	remove_malloced_element(container, entity_count(), component_sizes[entity_id], entity_id);
+    }
+    remove_element(component_masks, entity_id);
 }
 
 bool ECS::check_components(u64 entity_id, u64 component_flags) {
@@ -60,5 +72,4 @@ u64 ECS::entity_count() {
 u64 ECS::component_count() {
     return components.size();
 }
-
 
