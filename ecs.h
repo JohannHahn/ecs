@@ -22,7 +22,6 @@ typedef uint8_t  byte;
 template<class T> inline void remove_element(std::vector<T>& array, u64 index) {
     std::cout << "---- removing element = " << index << " from vector\n";
     std::cout << "array size = " << array.size() << "\n";
-    if (index == 0) return;
     assert(index < array.size());
     u64 last_index = array.size() - 1;
     if (index < last_index) {
@@ -31,10 +30,8 @@ template<class T> inline void remove_element(std::vector<T>& array, u64 index) {
     array.pop_back();
 }
 inline void remove_malloced_element (void* array, u64 count, u64 object_size_bytes, u64 index) {
-    if (index == 0) return;
     std::cout << " M--- removing malloced element = " << index << "\nsize = " << count << "\n";
-
-    //memcpy((byte*)array + index * object_size_bytes , (byte*)array + (count - 1) * object_size_bytes, object_size_bytes);
+    memcpy((byte*)array + index * object_size_bytes , (byte*)array + (count - 1) * object_size_bytes, object_size_bytes);
 }
 
 class ECS {
