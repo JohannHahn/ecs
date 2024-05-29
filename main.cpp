@@ -44,17 +44,18 @@ void remove_enemy(u64 entity_id = 0) {
 	    std::cout << "nothing to delete\n";
 	    return;
 	}
-	entity_id = GetRandomValue(1, ecs.entity_count() - 1);
+	entity_id = 1;
     }
     std::cout << "entity_id = " << entity_id << "\n";
     ecs.remove_entity(entity_id);
 }
 
 void add_enemy() {
-    std::cout << "added entity with id = " << ecs.add_entity(POSITION_FLAG | VELOCITY_FLAG) << "\n";
-    Vector2 position = {(float)GetRandomValue(0, window_width), (float)GetRandomValue(0, window_height)};
+    u64 entity_id = ecs.add_entity(POSITION_FLAG | VELOCITY_FLAG);
+    std::cout << "added entity with id = " << entity_id << "\n";
+    Vector2 position = {entity_id * 100.f, window_height / 2.f};
     Vector2 velocity = {.0, .0}; 
-    set_components(ecs.entity_count() - 1, position, velocity, SEEK);
+    set_components(entity_id, position, velocity, SEEK);
 }
 
 void movement_system() {   
@@ -86,11 +87,10 @@ void control_system() {
     ecs.write_component(PLAYER, VELOCITY_INDEX, vel);
     for (int i = 1; i < ecs.entity_count(); ++i) {
 	if (ecs.read_component<Behaviour>(i, BEHAVIOUR_INDEX) == SEEK) { 
-	    Vector2 player_pos = {(float)GetRandomValue(0, window_width),
-				  (float)GetRandomValue(0, window_height)};//ecs.read_component<Vector2>(PLAYER, POSITION_INDEX);
+	    Vector2 player_pos = ecs.read_component<Vector2>(PLAYER, POSITION_INDEX);
 	    Vector2 pos = ecs.read_component<Vector2>(i, POSITION_INDEX);
 	    Vector2 vel = Vector2Subtract(player_pos, pos);
-	    ecs.write_component(i, VELOCITY_INDEX, vel); 
+	    //ecs.write_component(i, VELOCITY_INDEX, vel); 
 	}
     }
 
@@ -113,28 +113,11 @@ void draw() {
 int main() {
     InitWindow(window_width, window_height, window_title);
     SetTargetFPS(60);
+    Vector2 array[2] = {{0, 1}, {2, 3}};
 
     //Player
     ecs.add_entity(POSITION_FLAG | VELOCITY_FLAG);
     set_components(PLAYER, {0, 0}, {0, 0}, PLAYER_CONTROL);
-
-    #if 0 
-    std::vector<u64> n = {1, 2, 3, 4, 5};
-    void* p = malloc(sizeof(u64) * 5);
-    for (u64 i = 1; i < 6; ++i) {
-	memcpy((byte*)p + (i-1) * sizeof(u64), &i, sizeof(i));
-    }
-    int index = GetRandomValue(0, 4);
-    remove_element(n, index);
-    std::cout << "numbers in vector \n";
-    for (u64 num : n) std::cout << num << "\n";
-    remove_malloced_element(p, 5, sizeof(u64), index);
-    std::cout << "numbers in malloced array: \n";
-    for (int i = 0; i < 4; ++i) {
-	std::cout << "p[" << i <<"] = " << ((u64*)p)[i] << "\n";
-    }
-    return 0;
-    #endif
 
     while (!WindowShouldClose()) {
 	BeginDrawing();

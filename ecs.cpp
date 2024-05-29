@@ -55,8 +55,11 @@ u64 ECS::add_entity(u64 mask) {
 
 void ECS::remove_entity(u64 entity_id) {
     assert(entity_id < component_masks.size());
-    for (void* container: components) {
-	remove_malloced_element(container, entity_count(), component_sizes[entity_id], entity_id);
+    u64 entity_count_before = entity_count();
+    std::cout << "removing entity at id = " << entity_id << ", entity count before deletion = " << entity_count_before << "\n";
+    for (int i = 0; i < components.size(); ++i) {
+	void* p = components[i];
+	remove_malloced_element(&components[i], entity_count_before, component_sizes[i], entity_id);
     }
     remove_element(component_masks, entity_id);
 }
