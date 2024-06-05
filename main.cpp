@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstring>
 #include <iostream>
 #include "raylib/src/raylib.h"
 #include "raylib/src/raymath.h"
@@ -39,12 +40,12 @@ void set_components(u64 entity_id, Vector2 position, Vector2 velocity, Behaviour
 }
 
 void remove_enemy(u64 entity_id = 0) {
-    if (!entity_id) {
-	if (ecs.entity_count() == 1) {
-	    std::cout << "nothing to delete\n";
-	    return;
-	}
-	entity_id = 1;
+    if (ecs.entity_count() == 1) {
+	std::cout << "nothing to delete\n";
+	return;
+    }
+    if (entity_id == PLAYER) {
+	assert(0 && "trying to delete player in remove_enemy");
     }
     std::cout << "entity_id = " << entity_id << "\n";
     ecs.remove_entity(entity_id);
@@ -98,7 +99,7 @@ void control_system() {
 	add_enemy();
     }
     if (IsKeyReleased(KEY_F)) {
-	remove_enemy();
+	remove_enemy(1);
     }
 }
 
@@ -110,11 +111,15 @@ void draw() {
     }
 }
 
+void resize() {
+    window_width = GetScreenWidth();
+    window_width = GetScreenHeight();
+}
+
 int main() {
     InitWindow(window_width, window_height, window_title);
+    SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetTargetFPS(60);
-    Vector2 array[2] = {{0, 1}, {2, 3}};
-
     //Player
     ecs.add_entity(POSITION_FLAG | VELOCITY_FLAG);
     set_components(PLAYER, {0, 0}, {0, 0}, PLAYER_CONTROL);
@@ -126,6 +131,8 @@ int main() {
 	movement_system();
 	draw();
 	EndDrawing();
+
+	if (IsWindowResized()) resize();
     }
 
     CloseWindow();
