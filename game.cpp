@@ -30,8 +30,9 @@ enum Behaviour {
     PLAYER_CONTROL, SEEK,
 };
 
+u64 component_sizes[] = {sizeof(Vector2), sizeof(Vector2), sizeof(Behaviour)};
 //				POSITION	VELOCITY        BEHAVIOUR	
-ECS ecs(COMPONENT_INDEX_MAX, sizeof(Vector2), sizeof(Vector2), sizeof(Behaviour));
+ECS ecs(COMPONENT_INDEX_MAX, component_sizes);
 
 void set_components(u64 entity_id, Vector2 position, Vector2 velocity, Behaviour behaviour) {
     ecs.write_component(entity_id, POSITION_INDEX, position);    

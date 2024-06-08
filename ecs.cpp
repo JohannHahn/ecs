@@ -13,19 +13,14 @@ template<class T> inline void remove_element(std::vector<T>& array, u64 index) {
     array.pop_back();
 }
 
-ECS::ECS(u64 component_count, ...) {
+ECS::ECS(u64 component_count, u64 sizes[]){
     // preallocate for 1 entity with no components
     component_masks = {};
 
-    va_list args;
-    va_start(args, component_count);
     // save component byte sizes
     for(int i = 0; i < component_count; ++i) {
-	u64 component_size = va_arg(args, u64);
-	std::cout << "adding component_size = " << component_size << "\n";
-	component_sizes.push_back(component_size);
+	component_sizes.push_back(sizes[i]);
     }
-    va_end(args);
     realloc_components();
 }
 
@@ -44,7 +39,6 @@ void ECS::free_components() {
 	free(p);
     }
     components.clear();
-    std::cout << "components cleared" << "\n";
 }
 
 u64 ECS::add_entity(u64 mask) {

@@ -13,6 +13,7 @@ entity ids are the index (hash?) into the buffer
 
 typedef uint64_t u64;
 typedef uint32_t u32;
+typedef uint16_t u16;
 typedef uint8_t  byte;
 
 #define bit_check(map, bit) ((u64)map >> bit & (u64)1)
@@ -24,7 +25,7 @@ typedef uint8_t  byte;
 
 class ECS {
 public:
-    ECS(u64 component_count, ...);
+    ECS(u64 component_count, u64 sizes[]); 
     u64 add_entity(u64 mask);
     template<class T> void write_component(u64 entity_id, u64 component_id, T data) {
         assert(entity_id < component_masks.size());
