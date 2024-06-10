@@ -4,15 +4,6 @@
 #include <cstring>
 #include <iostream>
 
-template<class T> inline void remove_element(std::vector<T>& array, u64 index) {
-    assert(index < array.size());
-    u64 last_index = array.size() - 1;
-    if (index < last_index) {
-        array[index] = array[last_index]; 
-    }
-    array.pop_back();
-}
-
 ECS::ECS(u64 component_count, u64 sizes[]){
     // preallocate for 1 entity with no components
     component_masks = {};
@@ -78,6 +69,11 @@ u64 ECS::component_count() {
     return components.size();
 }
 
+u64 ECS::get_component_mask(u64 entity_id) {
+    assert(entity_id < entity_count());
+    return component_masks[entity_id];
+}
+
 void ECS::remove_malloced_element (void** array, u64 count, u64 component_size_bytes, u64 index) {
     assert(index < count && "trying to remove out of bounds\n");
     byte* element_to_delete = array_at(*array, index, component_size_bytes);
@@ -86,4 +82,10 @@ void ECS::remove_malloced_element (void** array, u64 count, u64 component_size_b
     memcpy(new_array, *array, component_size_bytes * (count - 1));
     free(*array);
     *array = new_array;
+}
+
+ECS::~ECS() {
+    for(void* p : components) {
+	free(p);
+    }
 }

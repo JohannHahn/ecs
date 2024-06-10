@@ -22,10 +22,19 @@ typedef uint8_t  byte;
 #define array_at(array, index, size) (((byte*)array) + (index) * (size))
 
 // removes elemnt from array
+template<class T> inline void remove_element(std::vector<T>& array, u64 index) {
+    assert(index < array.size());
+    u64 last_index = array.size() - 1;
+    if (index < last_index) {
+        array[index] = array[last_index]; 
+    }
+    array.pop_back();
+}
 
 class ECS {
 public:
     ECS(u64 component_count, u64 sizes[]); 
+    ~ECS();
     u64 add_entity(u64 mask);
     template<class T> void write_component(u64 entity_id, u64 component_id, T data) {
         assert(entity_id < component_masks.size());
@@ -45,6 +54,7 @@ public:
     bool check_components(u64 entity_id, u64 component_flags);
     void remove_entity(u64 enitiy_id);
     u64 size_of_component(u64 component_id);
+    u64 get_component_mask(u64 entity_id);
 private:
     std::vector<u64> component_masks;
     std::vector<void*> components;
@@ -54,3 +64,4 @@ private:
     void free_components();
     void remove_malloced_element (void** array, u64 count, u64 component_size_bytes, u64 index);
 };
+
