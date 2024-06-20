@@ -27,7 +27,7 @@ void ECS::realloc_components() {
 
 void ECS::free_components() {
     for (void* p : components) {
-	free(p);
+	if (p) free(p);
     }
     components.clear();
 }
@@ -52,10 +52,11 @@ void ECS::remove_entity(u64 entity_id) {
     u64 entity_count_before = entity_count();
     for (int i = 0; i < components.size(); ++i) {
 	void* p = components[i];
-	remove_malloced_element(&components[i], entity_count_before, component_sizes[i], entity_id);
+	remove_element(&components[i], entity_count_before, component_sizes[i], entity_id);
     }
     remove_element(component_masks, entity_id);
 }
+
 
 bool ECS::check_components(u64 entity_id, u64 component_flags) {
     return component_flags & component_masks[entity_id];
@@ -74,15 +75,6 @@ u64 ECS::get_component_mask(u64 entity_id) {
     return component_masks[entity_id];
 }
 
-void ECS::remove_malloced_element (void** array, u64 count, u64 component_size_bytes, u64 index) {
-    assert(index < count && "trying to remove out of bounds\n");
-    byte* element_to_delete = array_at(*array, index, component_size_bytes);
-    memmove(element_to_delete, element_to_delete + component_size_bytes, component_size_bytes * (count - index));
-    void* new_array = malloc(component_size_bytes * (count - 1));
-    memcpy(new_array, *array, component_size_bytes * (count - 1));
-    free(*array);
-    *array = new_array;
-}
 
 ECS::~ECS() {
     for(void* p : components) {

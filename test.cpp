@@ -1,5 +1,6 @@
 #include "iostream"
 #include <cassert>
+#include <cstdlib>
 #include <string>
 #include "ecs.h"
 
@@ -29,6 +30,59 @@ struct State {
 u64 component_sizes[] = {sizeof(byte), sizeof(u16), sizeof(u32), sizeof(u64)};
 const u64 component_count = sizeof(component_sizes) / sizeof(u64);
 
+template<class T> void print_vector(const std::vector<T>& vec) {
+    for(const T& t : vec) {
+	if (sizeof(T) == 1) std::cout << (u64)t << ", ";
+	else std::cout << t << ", ";
+    }
+    std::cout << "\n";
+}
+
+void print_ecs(ECS& ecs) {
+    u64 entity_count = ecs.entity_count();
+    std::cout << "------\n";
+    std::cout << "ECS: \n";
+    std::cout << "component masks: \n";
+    for(int i = 0; i < entity_count; ++i) {
+	std::cout << ecs.get_component_mask(i) << ", ";
+    } 
+    std::cout << "\n";
+    std::cout << "bytes: \n";
+    for(int i = 0; i < entity_count; ++i) {
+	std::cout << (u64)ecs.read_component<byte>(i, 0) << ", ";
+    } 
+    std::cout << "\n";
+    std::cout << "u16: \n";
+    for(int i = 0; i < entity_count; ++i) {
+	std::cout << ecs.read_component<u16>(i, 1) << ", ";
+    } 
+    std::cout << "\n";
+    std::cout << "u32: \n";
+    for(int i = 0; i < entity_count; ++i) {
+	std::cout << ecs.read_component<u32>(i, 2) << ", ";
+    } 
+    std::cout << "\n";
+    std::cout << "u64: \n";
+    for(int i = 0; i < entity_count; ++i) {
+	std::cout << ecs.read_component<u64>(i, 3) << ", ";
+    } 
+    std::cout << "\n";
+}
+
+void print_state(const State& state) {
+    std::cout << "------\n";
+    std::cout << "State: \n";
+    std::cout << "component masks: \n";
+    print_vector(state.component_masks);
+    std::cout << "bytes: \n";
+    print_vector(state.bytes);
+    std::cout << "u16: \n";
+    print_vector(state.u16s);
+    std::cout << "u32: \n";
+    print_vector(state.u32s);
+    std::cout << "u64: \n";
+    print_vector(state.u64s);
+}
 
 void log(log_level log_level, std::string msg) {
     std::string output = ""; 
@@ -228,20 +282,24 @@ void test_remove_entity() {
     ECS ecs = ecs_from_state(state);
     bool result = compare_state(state, ecs);
     if (!result) log(ERROR, "test remove entity : state and ecs do not match after creation");
-    for (int i = 0; i < ecs.entity_count(); ++i) {
+
+    int end = ecs.entity_count();
+    for (int i = 0; i < end; ++i) {
 	ecs.remove_entity(0);
 	remove_entity_from_state(state, 0);
 	if (!compare_state(state, ecs)) {
 	    result = false;
 	    log(ERROR, "test remove entities failed at i = " + std::to_string(i));
+	    print_state(state);
+	    print_ecs(ecs);
 	    break;
 	}
     }
     log(result, "test remove entity");
 }
 
-int main() {
 
+int main() {
     test_create_ecs_from_state();
     test_add_entity(1000);
     test_remove_entity();

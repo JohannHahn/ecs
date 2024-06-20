@@ -11,3 +11,4 @@ set_property(TARGET test PROPERTY CXX_STANDARD 20)
 
 target_link_libraries(game raylib)
 
+
